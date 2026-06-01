@@ -6,7 +6,7 @@
 
 ## The Problem
 
-How do you grant privileged access to highly segmented, high-trust zones — **just-in-time, individually attributable, time-bound, and fully audited** — when your identity governance tooling sits in a *lower*-trust zone and cannot be granted a network path into the systems it must manage?
+How do you grant privileged access to highly segmented, high-trust zones — **transient, individually attributable, time-bound, and fully audited** — when your identity governance tooling sits in a *lower*-trust zone and cannot be granted a network path into the systems it must manage?
 
 This is a recurring class of problem in organizations that run regulated, business-critical platforms behind strong network segmentation. It typically presents with the following starting conditions:
 
@@ -35,7 +35,7 @@ Admin → SSO/Bastion → SSH → SUDO to shared service account
    Reviewed annually · outside governance · shared identity
 ```
 
-### After — Just-in-time access (three paths)
+### After — Transient Elevated Access (three paths)
 
 ```
 PATH 1 · Normal operations (change-driven)
@@ -51,7 +51,7 @@ PATH 3 · Batch / ETL (non-interactive)
   Job → secrets manager → credential checkout → execute → check-in → rotate
 ```
 
-### The hot path: change-driven JIT
+### The hot path: change-driven TEA
 
 Two intake routes feed the same evaluation logic:
 
@@ -88,7 +88,7 @@ flowchart LR
 
 ### Identity model: shared accounts → individual identity
 
-The pivotal change is eliminating the `sudo`-to-shared-account pattern. Post-JIT, admins authenticate as individuals; the host-side enforcement agent picks up their personal privileges from the local zone directory, with policy applied via configuration management. **Every privileged action becomes traceable to one person.**
+The pivotal change is eliminating the `sudo`-to-shared-account pattern. Post-TEA, admins authenticate as individuals; the host-side enforcement agent picks up their personal privileges from the local zone directory, with policy applied via configuration management. **Every privileged action becomes traceable to one person.**
 
 ### Non-interactive workloads (batch / ETL)
 
@@ -136,7 +136,7 @@ flowchart TD
 | Secondary governance (elevated zone) | Source of truth for privileged provisioning |
 | Zone directories | User-to-role membership |
 | Host enforcement agent | Real-time access enforcement |
-| Secrets manager | JIT credentials for batch/ETL + last-resort break-glass |
+| Secrets manager | TEA credentials for batch/ETL + last-resort break-glass |
 
 ---
 
@@ -168,7 +168,7 @@ Immediately halt *new* standing-account creation. This blocks teams temporarily 
 
 ### Pattern 3 — Change-driven auto-provisioning with whitelisting
 
-Tie JIT access to approved changes. Whitelist the majority of routine roles per zone for auto-provisioning during change windows; route the rest through approval.
+Tie TEA access to approved changes. Whitelist the majority of routine roles per zone for auto-provisioning during change windows; route the rest through approval.
 
 **Watch-out:** many workflow engines are *not* designed for conditional step-skipping. Implementing "auto-approve whitelisted, route others" can demand significant unsupported customization and heavy testing. **Validate your platform's customization ceiling early** — what looks like configuration is often custom development.
 
@@ -209,7 +209,7 @@ flowchart TD
 
 | Failure mode | Impact | Mitigation |
 |--------------|--------|------------|
-| Zone-boundary proxy down | No JIT via normal path | Fall to Tier 2 (secrets-manager root checkout) |
+| Zone-boundary proxy down | No TEA via normal path | Fall to Tier 2 (secrets-manager root checkout) |
 | Secondary governance node failure | None — transparent | Active-active cluster fails over |
 | Primary governance node failure | None — transparent | Active-active cluster fails over |
 | Zone directory controller down | Cannot provision to that zone | Fall to Tier 2 (secrets manager) |
@@ -295,13 +295,13 @@ On every role drop, fire an event. A reporting consumer aggregates events over a
 | Identity governance platform | Approval workflows, governance, role definitions (primary); privileged provisioning to high-security zones (secondary) |
 | Zone directory service | Per-zone user-to-role mapping |
 | Host enforcement agent | Real-time access enforcement via directory group membership |
-| Change-management system | JIT triggers and auto-revocation |
+| Change-management system | TEA triggers and auto-revocation |
 | Workflow / approval engine | Approval orchestration — customized for whitelisting logic |
 | Zone-boundary proxy | Inspectable HTTPS bridge between governance instances across zone boundaries |
 | Native identity APIs | The governance platform's underlying API framework, invoked by the REST bridges |
 | REST bridge (primary) | Exposes native governance APIs to the UI and change system |
 | REST bridge (secondary) | Receives provisioning instructions and relays them into directory operations |
-| Secrets manager | JIT credentials for batch/ETL (routine) + last-resort break-glass (rare); immediate rotation after every checkout |
+| Secrets manager | TEA credentials for batch/ETL (routine) + last-resort break-glass (rare); immediate rotation after every checkout |
 | Configuration management | Policy enforcement on hosts — controls enforcement-agent privilege mapping |
 | Bastion / jump host | Access entry point — SSO in, select a zone host, then connect to the target |
 
