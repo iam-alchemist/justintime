@@ -1,4 +1,4 @@
-# Just-In-Time Privileged Access for Segmented High-Trust Environments
+# TEA pattern (Transient Elevated Access) to remediate long-lived privileged access in critical security zones 
 
 *A reference architecture and set of design patterns for delivering individually-attributable, time-bound, fully-audited privileged access to strongly segmented systems.*
 
@@ -56,7 +56,7 @@ PATH 3 · Batch / ETL (non-interactive)
 Two intake routes feed the same evaluation logic:
 
 - **Via the change system** — the admin lists the required privileged roles on an approved change; on approval, the change system automatically forwards the access request to governance.
-- **Via governance directly** — the admin requests the whitelisted JIT role through the governance UI, linked to the approved change.
+- **Via governance directly** — the admin requests the whitelisted TEA role through the governance UI, linked to the approved change.
 
 Every request is evaluated *immediately at submission* against an accumulation threshold (see *Circuit Breaker* below):
 
@@ -225,8 +225,8 @@ These are the kinds of results this architecture is designed to produce.
 
 | Metric | Before | After |
 |--------|--------|-------|
-| Standing privileged accounts | Thousands (dozens per zone × many zones) | Effectively zero — consolidated into a fraction of JIT roles |
-| Active privileged access at any moment | ~100% always active | ~10–20% of JIT roles active at any time |
+| Standing privileged accounts | Thousands (dozens per zone × many zones) | Effectively zero — consolidated into a fraction of TEA roles |
+| Active privileged access at any moment | ~100% always active | ~10–20% of TEA roles active at any time |
 | Time to obtain privileged access | Weeks (ticket-driven) | Instant — available at change time |
 | Access governance | Annual audit, out of band | Continuous — time-bound, auto-revoked, governed |
 | Insider-privilege security incidents | Non-zero | Zero post-implementation |
